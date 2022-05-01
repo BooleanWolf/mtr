@@ -1,3 +1,4 @@
+from unicodedata import category
 from django.shortcuts import render
 from django.http import JsonResponse
 
@@ -31,8 +32,29 @@ def categorylist(request):
 @api_view(['GET'])
 def categoryDetails(request, pk):
     cats = Category.objects.get(id=pk)
+    nc = cats.title
+    print(nc)
     serializer = CategorySerializer(cats, many=False)
-    return Response(serializer.data)
+    lecs = Lectures.objects.filter(category__title__exact=nc)
+    ls = []
+
+    for i in lecs:
+        lecd = {}
+        lecd["id"] = i.id
+        lecd["title"] = i.title
+        lecd["date_created"] = i.date_created
+        lecd["link"] = i.link
+        lecd["duration"] = i.duration
+        ls.append(lecd)
+
+    ctdetails = {
+        "id": cats.id,
+        "title": cats.title,
+        "short_description": cats.short_description,
+        "date_created": cats.date_created,
+        "lectures": ls
+    }
+    return Response(ctdetails)
 
 
 @api_view(['GET'])
