@@ -1,1 +1,1 @@
-web gunicorn mtr.wsgi:application --log-file -
+web: gunicorn mtr.wsgi:application --log-file -
