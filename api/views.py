@@ -11,6 +11,17 @@ from .models import Category, Lectures
 # Create your views here.
 
 
+def shortenToLong(link):
+    code = ""
+    if "youtu.be" in link:
+        a = link  # https://youtu.be/z1WFtnqLgtA
+        a = a.replace("https://youtu.be/", "")
+        code = a
+        l = f"https://www.youtube.com/watch?v={code}"
+        return l
+    return link
+
+
 @api_view(['GET'])
 def apiOverview(request):
     api_urls = {
@@ -33,7 +44,6 @@ def categorylist(request):
 def categoryDetails(request, pk):
     cats = Category.objects.get(id=pk)
     nc = cats.title
-    print(nc)
     serializer = CategorySerializer(cats, many=False)
     lecs = Lectures.objects.filter(category__title__exact=nc)
     ls = []
@@ -43,7 +53,7 @@ def categoryDetails(request, pk):
         lecd["id"] = i.id
         lecd["title"] = i.title
         lecd["date_created"] = i.date_created
-        lecd["link"] = i.link
+        lecd["link"] = shortenToLong(i.link)
         lecd["duration"] = i.duration
         ls.append(lecd)
 
@@ -59,6 +69,12 @@ def categoryDetails(request, pk):
 
 @api_view(['GET'])
 def lecturelist(request):
+    cats = Lectures.objects.all()
+    for i in cats:
+        g = i.id
+        obj = Lectures.objects.get(id=g)
+        obj.link = shortenToLong(obj.link)
+        obj.save()
     cats = Lectures.objects.all()
     serializer = LectureSerializer(cats, many=True)
     return Response(serializer.data)
